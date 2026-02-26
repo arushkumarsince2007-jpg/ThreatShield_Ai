@@ -1,9 +1,3 @@
-Samajh gaya 🔥 tumhe proper **GitHub README style (#, ##, ### hashtags)** me chahiye — clean markdown format.
-
-Yeh lo ready-to-paste `README.md` 👇
-
----
-
 # 🛡️ ThreadShield AI
 
 ## AI-Powered Real-Time Threat Monitoring System
@@ -229,4 +223,5 @@ ml.anomaly_detected : true
 ## 🚀 Vision
 
 ThreadShield AI aims to evolve into an intelligent, autonomous AI-driven cybersecurity defense platform capable of real-time threat detection, analysis, and response in enterprise environments.
+
 
