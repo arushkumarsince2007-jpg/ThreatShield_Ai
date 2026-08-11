@@ -1,227 +1,88 @@
-# 🛡️ ThreadShield AI
+# ThreatShield AI
 
-## AI-Powered Real-Time Threat Monitoring System
+ThreatShield AI is a polished Flask-based SOC dashboard demo. It simulates security alerts, calculates a transparent risk score, optionally sends ECS-shaped events to Elastic, and uses Gemini only when an analyst requests triage.
 
----
+## Features
 
-## 👥 Team Name
+- Responsive real-time incident dashboard with risk trend chart
+- Simulated alerts: brute force, malware beaconing, privilege escalation, API abuse, and more
+- Explainable risk score and automatic response status
+- On-demand Gemini-powered analyst triage
+- Optional Elastic Cloud indexing; the dashboard still works without Elastic
+- `/health` endpoint for deployment health checks
 
-### Apex Predator
+## Quick start
 
----
+Requires Python 3.10+.
 
-## 👨‍💻 Team Members & Roles
-
-* **Arush Kumar** – Backend Developer & ML Integration Lead
-* **Adeel** – Cloud & Elastic Integration Specialist
-* **Aniket** – Risk Scoring & Threat Simulation Engineer
-* **Abhay** – Dashboard Design & System Testing Lead
-
----
-
-## 📌 Project Overview
-
-**ThreadShield AI** is a lightweight AI-powered threat detection and monitoring system built using only two core modules:
-
-* `app.py`
-* `elastic_modules.py`
-
-The system simulates cyber attack events, calculates dynamic risk scores, detects anomalies using Machine Learning (**Isolation Forest**), and streams structured logs to Elastic Cloud for real-time monitoring and visualization.
-
-This project demonstrates how AI can enhance traditional Security Operations Center (SOC) systems by adding intelligent detection and scalable cloud logging.
-
----
-
-## 🎯 Key Features
-
-* Real-time attack simulation
-* Dynamic risk score calculation
-* ML-based anomaly detection (Isolation Forest)
-* Secure API-based integration with Elastic Cloud
-* Structured logging (ECS-compatible format)
-* Real-time log search and filtering in Kibana
-* SOC-style monitoring dashboard capability
-
----
-
-## 🧠 How It Works
-
-### 1️⃣ Threat Simulation (`app.py`)
-
-The system generates simulated security events such as:
-
-* Brute force login attempts
-* Suspicious IP activity
-* Behavioral anomalies
-
----
-
-### 2️⃣ Risk Scoring Engine
-
-Each generated event is assigned a **dynamic risk score** based on:
-
-* Event severity
-* Frequency of occurrence
-* Behavioral anomaly detection output
-
-Unlike static threshold systems, the risk score adapts dynamically.
-
----
-
-### 3️⃣ Machine Learning Detection
-
-An **Isolation Forest model** identifies abnormal patterns in behavior.
-This allows the system to detect subtle threats beyond rule-based logic.
-
----
-
-### 4️⃣ Elastic Cloud Integration (`elastic_modules.py`)
-
-This module handles:
-
-* Secure connection using Elastic Cloud ID and API Key
-* Indexing structured logs
-* Real-time data streaming
-* ECS-compatible event formatting
-
-All logs become instantly searchable in Kibana.
-
----
-
-## 🏗️ System Architecture
-
-```
-Threat Simulation (app.py)
-        ↓
-Risk Scoring Engine
-        ↓
-ML Anomaly Detection
-        ↓
-Structured Log Creation
-        ↓
-Elastic Cloud (elastic_modules.py)
-        ↓
-Kibana Discover & Dashboards
-```
-
----
-
-## 🛠️ Tech Stack
-
-* Python
-* Scikit-learn (Isolation Forest)
-* Elastic Cloud
-* Kibana
-* JSON Structured Logging
-
----
-
-## ⚙️ Setup Instructions
-
-### Step 1: Install Dependencies
-
-```bash
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-```
-
----
-
-### Step 2: Configure Elastic Credentials
-
-Inside `elastic_modules.py`, add your credentials:
-
-```python
-ELASTIC_CLOUD_ID = "your_cloud_id"
-ELASTIC_API_KEY = "your_api_key"
-```
-
----
-
-### Step 3: Run the Application
-
-```bash
+Copy-Item .env.example .env
 python app.py
 ```
 
-If the connection is successful, the terminal will display:
+Open `http://localhost:5000`. The app runs in demo mode until optional credentials are configured.
 
-```
-Event sent to Elastic
-```
+## Gemini API setup
 
----
+1. Create a Gemini API key in [Google AI Studio](https://aistudio.google.com/app/apikey).
+2. Copy `.env.example` to `.env`.
+3. Set the key there:
 
-## 📊 Demo Flow
-
-1. Run the backend:
-
-```bash
-python app.py
+```env
+GEMINI_API_KEY=your_key_here
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
-2. Observe risk scoring and events in terminal
+Use the **Analyze with Gemini** button in the dashboard. Gemini is called only by the Flask backend, never from browser JavaScript; this keeps the secret out of the client and prevents polling from consuming your API quota. Do not commit `.env` or paste the key in source code.
 
-3. Open **Kibana → Discover**
+If a model is unavailable for your account, change `GEMINI_MODEL` to a supported Flash model in your Google AI Studio account.
 
-4. Search high-risk events:
+## Optional Elastic Cloud setup
 
-```
-risk_score > 80
-```
+Add these values to `.env`:
 
-5. Filter anomaly detections:
-
-```
-ml.anomaly_detected : true
+```env
+ELASTIC_URL=https://your-deployment.es.region.gcp.elastic-cloud.com:443
+ELASTIC_API_KEY=your_elastic_api_key
+ELASTIC_INDEX=threatshield-ai
 ```
 
-6. Open dashboard to visualize risk trends and alerts
+With no Elastic settings, events simply remain dashboard-only. With them, events are indexed in `threatshield-ai` and can be explored in Kibana Discover. Elastic connection failures are logged and do not take down the dashboard.
 
----
+## API routes
 
-## ⚔️ Challenges Faced
+| Route | Purpose |
+| --- | --- |
+| `GET /` | Dashboard |
+| `GET /api/data` | Generates one simulated alert and optionally indexes it |
+| `POST /api/analyze` | Gets Gemini triage guidance |
+| `GET /health` | Deployment health check |
 
-* Handling Elastic API authentication
-* Structuring logs in ECS format
-* Reducing ML false positives
-* Maintaining real-time event flow
-* Ensuring clean and scalable architecture with minimal modules
+## Deploy on Render (recommended)
 
----
+For this Flask demo, **Render Web Service** is the simplest choice: it supports Python, injects the `PORT` environment variable automatically, and the repository includes a `Procfile` production command.
 
-## 🏆 Achievements
+1. Push this repository to GitHub.
+2. In Render, select **New → Web Service** and connect the repository.
+3. Use build command: `pip install -r requirements.txt`.
+4. Use start command: `gunicorn --bind 0.0.0.0:$PORT app:app` (or allow Render to read the included `Procfile`).
+5. Add `GEMINI_API_KEY`, `GEMINI_MODEL`, and—if used—Elastic variables under **Environment** / **Secret Files**. Never put secrets in GitHub.
+6. Deploy, then verify `https://your-service.onrender.com/health` returns `{"status":"ok",...}`.
 
-* Successfully integrated Machine Learning with cloud logging
-* Built a working SOC-style monitoring architecture
-* Implemented dynamic risk scoring
-* Achieved real-time searchable threat visibility
-* Designed scalable architecture using only two core Python files
+Render is ideal for a demo/college project. For a production security platform, prefer Google Cloud Run because it has better IAM, Secret Manager, scaling control, and a natural fit with Gemini/Google Cloud.
 
----
+## Important demo note
 
-## 📚 What We Learned
+This project **simulates** alerts and response states. “IP temporarily blocked” is a dashboard decision, not a real firewall action. Add authentication, rate limiting, audit logs, real telemetry ingestion, and an approved response workflow before treating it as a production SOC tool.
 
-* Importance of structured logging in cybersecurity
-* Practical implementation of anomaly detection
-* Cloud-native observability using Elastic Stack
-* Balancing detection accuracy and performance
-* Real-world integration challenges in security systems
+## Project layout
 
----
-
-## 🔮 Future Improvements
-
-* Automated threat response (IP blocking system)
-* Email/SMS alert integration
-* Real traffic ingestion instead of simulation
-* Advanced deep learning-based detection
-* Role-based access control
-* SaaS deployment model
-
----
-
-## 🚀 Vision
-
-ThreadShield AI aims to evolve into an intelligent, autonomous AI-driven cybersecurity defense platform capable of real-time threat detection, analysis, and response in enterprise environments.
-
-
+```text
+app.py                Flask routes, dashboard, alert simulation, Gemini triage
+elastic_modules.py    Optional Elastic Cloud event formatting and indexing
+.env.example          Safe configuration template
+Procfile              Production process command for Render-style platforms
+```
